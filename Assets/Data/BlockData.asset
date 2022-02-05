@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad3f40c5e2b2489cb64227397ef096de, type: 3}
+  m_Name: BlockData
+  m_EditorClassIdentifier: 
+  TextureSizeX: 0.1
+  TextureSizeY: 0.1
+  TextureDataList:
+  - BlockType: 1
+    Up: {x: 8, y: 0}
+    Down: {x: 8, y: 0}
+    Side: {x: 8, y: 0}
+    IsSolid: 0
+    GeneratesCollider: 0
+  - BlockType: 2
+    Up: {x: 3, y: 5}
+    Down: {x: 3, y: 5}
+    Side: {x: 3, y: 5}
+    IsSolid: 1
+    GeneratesCollider: 1
+  - BlockType: 3
+    Up: {x: 7, y: 4}
+    Down: {x: 7, y: 4}
+    Side: {x: 7, y: 4}
+    IsSolid: 1
+    GeneratesCollider: 1
