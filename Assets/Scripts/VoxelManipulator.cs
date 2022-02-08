@@ -8,16 +8,25 @@ public class VoxelManipulator : MonoBehaviour
     [SerializeField] private World World;
     [SerializeField] private Transform PlacePoints;
 
+    private Vector3 _previouslyHighlight;
+    
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0) && Input.GetMouseButton(1))
+        if (Input.GetMouseButtonDown(0))
         {
-            SetBlock();
+            World.SetBlock(PlacePoints.position, TargetBlock);
         }
-    }
 
-    public void SetBlock()
-    {
-        World.SetBlock(PlacePoints.position, TargetBlock);
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            World.SetBlock(PlacePoints.position, BlockType.Air);
+
+        }
+        
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit raycastHit))
+        {
+            PlacePoints.position = raycastHit.point;
+        }
+        
     }
 }

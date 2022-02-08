@@ -45,21 +45,21 @@ public class ChunkRenderer : MonoBehaviour
         _mesh.Clear();
 
         var vert = meshData.Vertices.ToArray();
-        var tries = meshData.Triangles.ToArray();
+        var tris = meshData.Triangles.ToArray();
 
-        _mesh.subMeshCount = 1; // for using different materials?
+        _mesh.subMeshCount = 1;
         _mesh.vertices = vert;
 
-        _mesh.SetTriangles(tries, 0);
+        _mesh.SetTriangles(tris, 0);
 
         _mesh.uv = meshData.UV.ToArray();
         _mesh.RecalculateNormals();
 
         var sharedMesh = _meshCollider.sharedMesh;
-        sharedMesh.vertices = vert;
-        sharedMesh.triangles = tries;
+        sharedMesh.Clear();
+        sharedMesh.SetVertices(vert);
+        sharedMesh.SetTriangles(tris, 0);
         _meshCollider.sharedMesh = sharedMesh;
-        //_meshCollider.sharedMesh.collisionMesh.RecalculateNormals(); is it needed 
     }
 
     public void UpdateChunk()

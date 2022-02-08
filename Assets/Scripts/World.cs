@@ -71,7 +71,7 @@ public class World : MonoBehaviour
         }
     }
 
-    public void SetBlock(Vector3 worldPos, BlockType blockType)
+    public void SetBlock(Vector3 worldPos, BlockType newType)
     {
         Vector3Int pos = Chunk.GetChunkPosition(this, worldPos);
 
@@ -79,8 +79,12 @@ public class World : MonoBehaviour
             return;
 
         Vector3Int blockInChunkCoordinates = Chunk.GetBlockInChunkCoordinates(containerChunk.ChunkData, worldPos.ToInt());
-        Chunk.SetBlock(containerChunk.ChunkData, blockInChunkCoordinates, blockType);
-        containerChunk.UpdateChunk();
+        var prevType = Chunk.GetBlockFromChunkCoordinates(containerChunk.ChunkData, blockInChunkCoordinates);
+        if (newType != prevType)
+        {
+            Chunk.SetBlock(containerChunk.ChunkData, blockInChunkCoordinates, newType);
+            containerChunk.UpdateChunk();
+        }
     }
 
     public BlockType GetBlockFromChunkCoordinates(ChunkData chunkData, int x, int y, int z)
