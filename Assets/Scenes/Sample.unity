@@ -607,6 +607,7 @@ MonoBehaviour:
   ChunkHeight: 100
   NoiseScale: 0.03
   ChunkPrefab: {fileID: 4175814432963691083, guid: 56a6d028526e929478002b8131690e05, type: 3}
+  UpdateRate: 0.3
 --- !u!4 &1677888928
 Transform:
   m_ObjectHideFlags: 0

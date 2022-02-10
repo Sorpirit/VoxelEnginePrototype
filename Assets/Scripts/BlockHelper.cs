@@ -7,7 +7,7 @@ public static class BlockHelper
     {
         Direction.Backwards,
         Direction.Down,
-        Direction.Foreward,
+        Direction.Forward,
         Direction.Left,
         Direction.Right,
         Direction.Up
@@ -53,7 +53,7 @@ public static class BlockHelper
                 meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z - 0.5f), generatesCollider);
                 meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z - 0.5f), generatesCollider);
                 break;
-            case Direction.Foreward:
+            case Direction.Forward:
                 meshData.AddVertex(new Vector3(x + 0.5f, y - 0.5f, z + 0.5f), generatesCollider);
                 meshData.AddVertex(new Vector3(x + 0.5f, y + 0.5f, z + 0.5f), generatesCollider);
                 meshData.AddVertex(new Vector3(x - 0.5f, y + 0.5f, z + 0.5f), generatesCollider);
@@ -117,5 +117,27 @@ public static class BlockHelper
             Direction.Down => BlockDataManager.BlockTextureDataDictionary[blockType].Down,
             _ => BlockDataManager.BlockTextureDataDictionary[blockType].Side
         };
+    }
+    
+    public static Vector3Int GetNeighboursPosition(Vector3Int pos, Direction direction)
+    {
+        //TODO make scale relative
+        switch (direction)
+        {
+            case Direction.Backwards:
+                return pos + Vector3Int.back;
+            case Direction.Forward:
+                return pos + Vector3Int.forward;
+            case Direction.Left:
+                return pos + Vector3Int.left;
+            case Direction.Right:
+                return pos + Vector3Int.right;
+            case Direction.Up:
+                return pos + Vector3Int.up;
+            case Direction.Down:
+                return pos + Vector3Int.down;
+        }
+
+        return pos;
     }
 }

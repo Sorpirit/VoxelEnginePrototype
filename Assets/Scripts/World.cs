@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Data;
 using Helpers;
 using UnityEngine;
@@ -10,9 +11,51 @@ public class World : MonoBehaviour
     public int ChunkHeight = 100;
     public float NoiseScale = 0.03f;
     public GameObject ChunkPrefab;
+    public float UpdateRate;
 
     private readonly Dictionary<Vector3Int, ChunkData> _chunkDataDictionary = new Dictionary<Vector3Int, ChunkData>();
     private readonly Dictionary<Vector3Int, ChunkRenderer> _chunkDictionary = new Dictionary<Vector3Int, ChunkRenderer>();
+
+    private float updateTimer;
+
+    private void Start()
+    {
+        for (int x = 0; x < MapSizeInChunks; x++)
+        {
+            for (int z = 0; z < MapSizeInChunks; z++)
+            {
+                ChunkData data = new ChunkData(ChunkSize, ChunkHeight, this, new Vector3Int(x * ChunkSize, 0, z * ChunkSize));
+                GenerateEmptyVoxels(data);
+                _chunkDataDictionary.Add(data.WorldPosition, data);
+            }
+        }
+        Chunk.SetBlock(_chunkDataDictionary[Vector3Int.zero], new Vector3Int(ChunkSize / 2, 1, ChunkSize / 2), BlockType.Rock);
+
+        foreach (ChunkData data in _chunkDataDictionary.Values)
+        {
+            MeshData meshData = Chunk.GetChunkMeshData(data);
+            GameObject chunkObject = Instantiate(ChunkPrefab, data.WorldPosition, Quaternion.identity);
+            ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
+            _chunkDictionary.Add(data.WorldPosition, chunkRenderer);
+            chunkRenderer.InitializeChunk(data);
+            chunkRenderer.UpdateChunk(meshData);
+        }
+    }
+
+    private void Update()
+    {
+        if (updateTimer <= 0)
+        {
+            Simulate();
+            foreach (var chunkRend in _chunkDictionary.Values)
+            {
+                chunkRend.UpdateChunk();
+            }
+            updateTimer = UpdateRate;
+        }
+
+        updateTimer -= Time.deltaTime;
+    }
 
     public void GenerateWorld()
     {
@@ -70,6 +113,21 @@ public class World : MonoBehaviour
             }
         }
     }
+    
+    private void GenerateEmptyVoxels(ChunkData data)
+    {
+        for (int x = 0; x < data.ChunkSize; x++)
+        {
+            for (int z = 0; z < data.ChunkSize; z++)
+            {
+                for (int y = 0; y < ChunkHeight; y++)
+                {
+                    BlockType voxelType = BlockType.Air;
+                    Chunk.SetBlock(data, new Vector3Int(x, y, z), voxelType);
+                }
+            }
+        }
+    }
 
     public void SetBlock(Vector3 worldPos, BlockType newType)
     {
@@ -96,5 +154,49 @@ public class World : MonoBehaviour
 
         Vector3Int blockInCHunkCoordinates = Chunk.GetBlockInChunkCoordinates(containerChunk, new Vector3Int(x, y, z));
         return Chunk.GetBlockFromChunkCoordinates(containerChunk, blockInCHunkCoordinates);
+    }
+    
+    private void Simulate()
+    {
+        foreach (var data in _chunkDataDictionary.Values)
+        {
+            Chunk.LoopThroughTheBlocks(data, (pos, type) =>
+            {
+                switch (type)
+                {
+                    case BlockType.Sand:
+                        if(pos.y == 0)
+                            return;
+
+                        var down = BlockHelper.GetNeighboursPosition(pos, Direction.Down);
+                        var downF = down + BlockHelper.GetNeighboursPosition(pos, Direction.Forward);
+                        var downB = down + BlockHelper.GetNeighboursPosition(pos, Direction.Backwards);
+                        var downR = down + BlockHelper.GetNeighboursPosition(pos, Direction.Right);
+                        var downL = down + BlockHelper.GetNeighboursPosition(pos, Direction.Left);
+                        
+                        if (Chunk.GetNeighbourBlockFromChunkCoordinates(data, pos, Direction.Down).IsEmpty())
+                        {
+                            Chunk.SwapWithNeighbour(data, pos, Direction.Down);
+                        }
+                        else if (Chunk.GetBlockFromChunkCoordinates(data, downF).IsEmpty())
+                        {
+                            Chunk.SwapBlock(data, pos, downF);
+                        }
+                        else if (Chunk.GetBlockFromChunkCoordinates(data, downB).IsEmpty())
+                        {
+                            Chunk.SwapBlock(data, pos, downB);
+                        }
+                        else if (Chunk.GetBlockFromChunkCoordinates(data, downR).IsEmpty())
+                        {
+                            Chunk.SwapBlock(data, pos, downR);
+                        }
+                        else if (Chunk.GetBlockFromChunkCoordinates(data, downL).IsEmpty())
+                        {
+                            Chunk.SwapBlock(data, pos, downL);
+                        }
+                        break;
+                }
+            });
+        }
     }
 }

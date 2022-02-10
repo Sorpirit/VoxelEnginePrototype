@@ -13,6 +13,28 @@ public static class Chunk
         }
     }
 
+    public static void LoopThroughTheBlocks(ChunkData chunkData, Action<Vector3Int, BlockType> actionToPerform)
+    {
+        for (int index = 0; index < chunkData.Blocks.Length; index++)
+        {
+            var position = GetPostitionFromIndex(chunkData, index);
+            actionToPerform(position, chunkData.Blocks[index]);
+        }
+    }
+
+    public static void SwapBlock(ChunkData chunkData, Vector3Int currentPos, Vector3Int newPos)
+    {
+        var typeA = GetBlockFromChunkCoordinates(chunkData, currentPos);
+        var typeB = GetBlockFromChunkCoordinates(chunkData, newPos);
+        SetBlock(chunkData, currentPos, typeB);
+        SetBlock(chunkData, newPos, typeA);
+    }
+
+    public static void SwapWithNeighbour(ChunkData chunkData, Vector3Int currentPos, Direction direction)
+    {
+        SwapBlock(chunkData, currentPos, BlockHelper.GetNeighboursPosition(currentPos, direction));
+    }
+
     private static Vector3Int GetPostitionFromIndex(ChunkData chunkData, int index)
     {
         int x = index % chunkData.ChunkSize;
@@ -41,6 +63,12 @@ public static class Chunk
 
     public static BlockType GetBlockFromChunkCoordinates(ChunkData chunkData, Vector3Int chunkCoordinates)
     {
+        return GetBlockFromChunkCoordinates(chunkData, chunkCoordinates.x, chunkCoordinates.y, chunkCoordinates.z);
+    }
+    
+    public static BlockType GetNeighbourBlockFromChunkCoordinates(ChunkData chunkData, Vector3Int chunkCoordinates, Direction neighbour)
+    {
+        chunkCoordinates = BlockHelper.GetNeighboursPosition(chunkCoordinates, neighbour);
         return GetBlockFromChunkCoordinates(chunkData, chunkCoordinates.x, chunkCoordinates.y, chunkCoordinates.z);
     }
 
@@ -98,6 +126,12 @@ public static class Chunk
 
         LoopThroughTheBlocks(chunkData, (x, y, z) => meshData = BlockHelper.GetMeshData(chunkData, x, y, z, meshData, chunkData.Blocks[GetIndexFromPosition(chunkData, x, y, z)]));
         
+        return meshData;
+    }
+    
+    public static MeshData GetChunkMeshData(ChunkData chunkData, MeshData meshData)
+    {
+        LoopThroughTheBlocks(chunkData, (x, y, z) => meshData = BlockHelper.GetMeshData(chunkData, x, y, z, meshData, chunkData.Blocks[GetIndexFromPosition(chunkData, x, y, z)]));
         return meshData;
     }
 

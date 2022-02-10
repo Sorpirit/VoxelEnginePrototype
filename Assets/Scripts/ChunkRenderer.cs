@@ -10,6 +10,7 @@ public class ChunkRenderer : MonoBehaviour
     private MeshFilter _meshFilter;
     private MeshCollider _meshCollider;
     private Mesh _mesh;
+    private MeshData _data;
     
     public bool ShowGizmo = false;
 
@@ -42,17 +43,18 @@ public class ChunkRenderer : MonoBehaviour
 
     private void RenderMesh(MeshData meshData)
     {
+        _data = meshData;
         _mesh.Clear();
 
-        var vert = meshData.Vertices.ToArray();
-        var tris = meshData.Triangles.ToArray();
+        var vert = _data.Vertices.ToArray();
+        var tris = _data.Triangles.ToArray();
 
         _mesh.subMeshCount = 1;
         _mesh.vertices = vert;
 
         _mesh.SetTriangles(tris, 0);
 
-        _mesh.uv = meshData.UV.ToArray();
+        _mesh.uv = _data.UV.ToArray();
         _mesh.RecalculateNormals();
 
         var sharedMesh = _meshCollider.sharedMesh;
@@ -64,7 +66,7 @@ public class ChunkRenderer : MonoBehaviour
 
     public void UpdateChunk()
     {
-        RenderMesh(Chunk.GetChunkMeshData(ChunkData));
+        RenderMesh(Chunk.GetChunkMeshData(ChunkData, _data));
     }
 
     public void UpdateChunk(MeshData data)
