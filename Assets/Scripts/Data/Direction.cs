@@ -8,12 +8,5 @@
         Left,       // -x direction
         Up,         // +y direction
         Down,        // -y direction
-        UpRightForward,
-        UpForward,
-        UpLeftForward,
-        UpLeft,
-        UpLeftBackwards,
-        UpBackwards,
-        UpRightBackwards,
     }
 }

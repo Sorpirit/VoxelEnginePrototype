@@ -7,24 +7,32 @@ using UnityEngine;
 [RequireComponent(typeof(MeshCollider))]
 public class ChunkRenderer : MonoBehaviour
 {
+    public bool ShowGizmo = false;
+
+    public ChunkData ChunkData { 
+        get => _chunkData;
+        set
+        {
+            _chunkData = value;
+            UpdateChunk();
+        }
+    }
+    
     private MeshFilter _meshFilter;
     private MeshCollider _meshCollider;
     private Mesh _mesh;
     private MeshData _data;
+    private ChunkData _chunkData;
     
-    public bool ShowGizmo = false;
-
-    public ChunkData ChunkData { get; private set; }
-
     public bool ModifiedByThePlayer
     {
         get
         {
-            return ChunkData.ModifiedByThePlayer;
+            return _chunkData.ModifiedByThePlayer;
         }
         set
         {
-            ChunkData.ModifiedByThePlayer = value;
+            _chunkData.ModifiedByThePlayer = value;
         }
     }
 
@@ -34,16 +42,12 @@ public class ChunkRenderer : MonoBehaviour
         _meshCollider = GetComponent<MeshCollider>();
         _meshCollider.sharedMesh = new Mesh();
         _mesh = _meshFilter.mesh;
+        
+        _data = MeshData.Default;
     }
 
-    public void InitializeChunk(ChunkData data)
+    private void RenderMesh()
     {
-        ChunkData = data;
-    }
-
-    private void RenderMesh(MeshData meshData)
-    {
-        _data = meshData;
         _mesh.Clear();
 
         var vert = _data.Vertices.ToArray();
@@ -66,12 +70,9 @@ public class ChunkRenderer : MonoBehaviour
 
     public void UpdateChunk()
     {
-        RenderMesh(Chunk.GetChunkMeshData(ChunkData, _data));
-    }
-
-    public void UpdateChunk(MeshData data)
-    {
-        RenderMesh(data);
+        _data.Clear();
+        Chunk.LoadMeshData(ChunkData, _data);
+        RenderMesh();
     }
 
 #if UNITY_EDITOR
@@ -79,14 +80,14 @@ public class ChunkRenderer : MonoBehaviour
     {
         if (ShowGizmo)
         {
-            if (Application.isPlaying && ChunkData != null)
+            if (Application.isPlaying && ChunkData.IsValid)
             {
                 if (Selection.activeObject == gameObject)
                     Gizmos.color = new Color(0, 1, 0, 0.4f);
                 else
                     Gizmos.color = new Color(1, 0, 1, 0.4f);
 
-                Gizmos.DrawCube(transform.position + new Vector3(ChunkData.ChunkSize / 2f, ChunkData.ChunkHeight / 2f, ChunkData.ChunkSize / 2f), new Vector3(ChunkData.ChunkSize, ChunkData.ChunkHeight, ChunkData.ChunkSize));
+                Gizmos.DrawCube(transform.position + new Vector3(World.Instance.ChunkSize / 2f, World.Instance.ChunkHeight / 2f, World.Instance.ChunkSize / 2f), new Vector3(World.Instance.ChunkSize, World.Instance.ChunkHeight, World.Instance.ChunkSize));
             }
         }
     }

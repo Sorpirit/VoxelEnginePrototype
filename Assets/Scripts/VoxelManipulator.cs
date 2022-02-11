@@ -27,6 +27,10 @@ public class VoxelManipulator : MonoBehaviour
         {
             PlacePoints.position = raycastHit.point;
         }
+        else
+        {
+            PlacePoints.localPosition = Vector3.forward * 10; 
+        }
         
     }
 }

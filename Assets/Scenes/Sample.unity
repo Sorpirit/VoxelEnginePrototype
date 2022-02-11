@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de43234b399d4b979233d1ad0ed46723, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TextureData: {fileID: 11400000, guid: c90464b26149fb147beb4e6606505064, type: 2}
+  textureData: {fileID: 11400000, guid: c90464b26149fb147beb4e6606505064, type: 2}
 --- !u!4 &303952133
 Transform:
   m_ObjectHideFlags: 0
@@ -607,7 +607,7 @@ MonoBehaviour:
   ChunkHeight: 100
   NoiseScale: 0.03
   ChunkPrefab: {fileID: 4175814432963691083, guid: 56a6d028526e929478002b8131690e05, type: 3}
-  UpdateRate: 0.3
+  UpdateRate: 0.1
 --- !u!4 &1677888928
 Transform:
   m_ObjectHideFlags: 0

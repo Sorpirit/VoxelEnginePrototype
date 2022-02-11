@@ -3,43 +3,45 @@ using UnityEngine;
 
 namespace Data
 {
-    public class MeshData
+    public struct MeshData
     {
-        public readonly List<Vector3> Vertices = new List<Vector3>();
-        public readonly List<int> Triangles = new List<int>();
-        public readonly List<Vector2> UV = new List<Vector2>();
-
-        public readonly List<Vector3> ColliderVertices = new List<Vector3>();
-        public readonly List<int> ColliderTriangles = new List<int>();
+        public static MeshData Default => new MeshData(50);
         
-        public void AddVertex(Vector3 vertex, bool vertexGeneratesCollider)
+        public readonly List<Vector3> Vertices;
+        public readonly List<int> Triangles;
+        public readonly List<Vector2> UV;
+
+        public readonly bool IsValid;
+
+        public MeshData(int verticesAmount = 100)
         {
-            Vertices.Add(vertex);
-            if (vertexGeneratesCollider)
-            {
-                ColliderVertices.Add(vertex);
-            }
+            Vertices = new List<Vector3>(verticesAmount);
+            Triangles = new List<int>(verticesAmount);
+            UV = new List<Vector2>();
+            IsValid = true;
         }
 
-        public void AddQuadTriangles(bool quadGeneratesCollider)
+        public readonly void AddVertex(Vector3 vertex)
+        {
+            Vertices.Add(vertex);
+        }
+
+        public readonly void AddQuadTriangles()
         {
             Triangles.Add(Vertices.Count - 4);
             Triangles.Add(Vertices.Count - 3);
             Triangles.Add(Vertices.Count - 2);
-
+            
             Triangles.Add(Vertices.Count - 4);
             Triangles.Add(Vertices.Count - 2);
             Triangles.Add(Vertices.Count - 1);
+        }
 
-            if (quadGeneratesCollider)
-            {
-                ColliderTriangles.Add(ColliderVertices.Count - 4);
-                ColliderTriangles.Add(ColliderVertices.Count - 3);
-                ColliderTriangles.Add(ColliderVertices.Count - 2);
-                ColliderTriangles.Add(ColliderVertices.Count - 4);
-                ColliderTriangles.Add(ColliderVertices.Count - 2);
-                ColliderTriangles.Add(ColliderVertices.Count - 1);
-            }
+        public readonly void Clear()
+        {
+            Vertices.Clear();
+            Triangles.Clear();
+            UV.Clear();
         }
     }
 }
