@@ -158,6 +158,10 @@ public class World : MonoBehaviour
                         {
                             Chunk.SwapWithNeighbour(chunkRenderer.ChunkData, pos, Direction.Down);
                         }
+                        else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, down) != BlockType.Sand)
+                        {
+                            return;
+                        }
                         else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, downF).IsEmpty())
                         {
                             Chunk.SwapBlocks(chunkRenderer.ChunkData, pos, downF);

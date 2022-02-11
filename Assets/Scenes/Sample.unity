@@ -796,6 +796,7 @@ MonoBehaviour:
   TargetBlock: 2
   World: {fileID: 1677888927}
   PlacePoints: {fileID: 244003320}
+  brushSize: 4
 --- !u!1 &2023246849
 GameObject:
   m_ObjectHideFlags: 0
