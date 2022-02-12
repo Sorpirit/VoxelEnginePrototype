@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using Data;
-using Helpers;
 using UnityEngine;
+using UnityTemplateProjects.Simulators;
 
 public class World : MonoBehaviour
 {
     public static World Instance { get; private set; }
-    
+
     public int MapSizeInChunks = 6;
     public int ChunkSize = 16;
     public int ChunkHeight = 100;
@@ -15,13 +16,23 @@ public class World : MonoBehaviour
     public GameObject ChunkPrefab;
     public float UpdateRate;
 
-    private readonly Dictionary<Vector3Int, ChunkRenderer> _chunkDictionary = new Dictionary<Vector3Int, ChunkRenderer>();
+    private readonly Dictionary<Vector3Int, ChunkRenderer> _chunkDictionary =
+        new Dictionary<Vector3Int, ChunkRenderer>();
+
+    private Dictionary<BlockType, ISimulator> _simulators;
+
 
     private float _simulationTimer;
 
     private void Awake()
     {
         Instance = this;
+        InitSimulators();
+    }
+
+    private void InitSimulators()
+    {
+        _simulators.Add(BlockType.Sand, new SandSimulator());
     }
 
     private void Start()
@@ -38,8 +49,11 @@ public class World : MonoBehaviour
                 chunkRenderer.ChunkData = data;
             }
         }
-        Chunk.SetBlock(_chunkDictionary[Vector3Int.zero].ChunkData, new Vector3Int(ChunkSize / 2, 1, ChunkSize / 2), BlockType.Rock);
-        Chunk.SetBlock(_chunkDictionary[Vector3Int.zero].ChunkData, new Vector3Int(ChunkSize / 2, 1, ChunkSize / 2), BlockType.Air);
+
+        Chunk.SetBlock(_chunkDictionary[Vector3Int.zero].ChunkData, new Vector3Int(ChunkSize / 2, 1, ChunkSize / 2),
+            BlockType.Rock);
+        Chunk.SetBlock(_chunkDictionary[Vector3Int.zero].ChunkData, new Vector3Int(ChunkSize / 2, 1, ChunkSize / 2),
+            BlockType.Air);
     }
 
     private void Update()
@@ -51,6 +65,7 @@ public class World : MonoBehaviour
             {
                 chunkRend.UpdateChunk();
             }
+
             _simulationTimer = UpdateRate;
         }
 
@@ -63,6 +78,7 @@ public class World : MonoBehaviour
         {
             Destroy(chunk.gameObject);
         }
+
         _chunkDictionary.Clear();
 
         for (int x = 0; x < MapSizeInChunks; x++)
@@ -85,7 +101,8 @@ public class World : MonoBehaviour
         {
             for (int z = 0; z < ChunkSize; z++)
             {
-                float noiseValue = Mathf.PerlinNoise((data.WorldPosition.x + x) * NoiseScale, (data.WorldPosition.z + z) * NoiseScale);
+                float noiseValue = Mathf.PerlinNoise((data.WorldPosition.x + x) * NoiseScale,
+                    (data.WorldPosition.z + z) * NoiseScale);
                 int groundPosition = Mathf.RoundToInt(noiseValue * ChunkHeight);
                 for (int y = 0; y < ChunkHeight; y++)
                 {
@@ -104,7 +121,7 @@ public class World : MonoBehaviour
             }
         }
     }
-    
+
     private void GenerateEmptyVoxels(in ChunkData data)
     {
         for (int x = 0; x < ChunkSize; x++)
@@ -128,57 +145,23 @@ public class World : MonoBehaviour
             return;
 
         Vector3Int blockInChunkCoordinates = Chunk.WorldToLocal(containerChunk.ChunkData, worldPos);
-        var prevType = Chunk.GetVoxelTypeChunkSpace(containerChunk.ChunkData, blockInChunkCoordinates);
+        var prevType = Chunk.GetBlockTypeByCoordsInChunk(containerChunk.ChunkData, blockInChunkCoordinates);
         if (newType != prevType)
         {
             Chunk.SetBlock(containerChunk.ChunkData, blockInChunkCoordinates, newType);
             containerChunk.UpdateChunk();
         }
     }
-    
+
     private void Simulate()
     {
         foreach (var chunkRenderer in _chunkDictionary.Values)
         {
             Chunk.LoopThroughTheBlocks(chunkRenderer.ChunkData, (pos, type) =>
             {
-                switch (type)
+                if (_simulators.ContainsKey(type))
                 {
-                    case BlockType.Sand:
-                        if(pos.y <= 0)
-                            return;
-
-                        var down = BlockHelper.GetNeighboursPosition(pos, Direction.Down);
-                        var downF = BlockHelper.GetNeighboursPosition(down, Direction.Forward);
-                        var downB = BlockHelper.GetNeighboursPosition(down, Direction.Backwards);
-                        var downR = BlockHelper.GetNeighboursPosition(down, Direction.Right);
-                        var downL = BlockHelper.GetNeighboursPosition(down, Direction.Left);
-                        
-                        if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, down).IsEmpty())
-                        {
-                            Chunk.SwapWithNeighbour(chunkRenderer.ChunkData, pos, Direction.Down);
-                        }
-                        else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, down) != BlockType.Sand)
-                        {
-                            return;
-                        }
-                        else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, downF).IsEmpty())
-                        {
-                            Chunk.SwapBlocks(chunkRenderer.ChunkData, pos, downF);
-                        }
-                        else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, downB).IsEmpty())
-                        {
-                            Chunk.SwapBlocks(chunkRenderer.ChunkData, pos, downB);
-                        }
-                        else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, downR).IsEmpty())
-                        {
-                            Chunk.SwapBlocks(chunkRenderer.ChunkData, pos, downR);
-                        }
-                        else if (Chunk.GetVoxelTypeChunkSpace(chunkRenderer.ChunkData, downL).IsEmpty())
-                        {
-                            Chunk.SwapBlocks(chunkRenderer.ChunkData, pos, downL);
-                        }
-                        break;
+                    _simulators[type].SimulateBlock(chunkRenderer.ChunkData, pos, _chunkDictionary);
                 }
             });
         }

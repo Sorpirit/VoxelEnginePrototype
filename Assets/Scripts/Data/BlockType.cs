@@ -5,6 +5,7 @@ namespace Data
         Nothing,
         Air,
         Rock,
-        Sand
+        Sand,
+        Water
     }
 }

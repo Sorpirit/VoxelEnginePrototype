@@ -24,8 +24,8 @@ public static class Chunk
 
     public static void SwapBlocks(in ChunkData chunkData, Vector3Int currentPos, Vector3Int newPos)
     {
-        var typeA = GetVoxelTypeChunkSpace(chunkData, currentPos);
-        var typeB = GetVoxelTypeChunkSpace(chunkData, newPos);
+        var typeA = GetBlockTypeByCoordsInChunk(chunkData, currentPos);
+        var typeB = GetBlockTypeByCoordsInChunk(chunkData, newPos);
         SetBlock(in chunkData, currentPos, typeB);
         SetBlock(in chunkData, newPos, typeA);
     }
@@ -77,7 +77,7 @@ public static class Chunk
         return true;
     }
 
-    public static BlockType GetVoxelTypeChunkSpace(in ChunkData chunkData, Vector3Int voxelPosition)
+    public static BlockType GetBlockTypeByCoordsInChunk(in ChunkData chunkData, Vector3Int voxelPosition)
     {
         if (InRange(voxelPosition.x) && InRangeHeight(voxelPosition.y) &&
             InRange(voxelPosition.z))

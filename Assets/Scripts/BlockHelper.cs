@@ -24,7 +24,7 @@ public static class BlockHelper
     /// <returns></returns>
     public static void LoadVoxelGeometryData(in ChunkData chunk, in MeshData meshData, Vector3Int voxelPosition)
     {
-        var blockType = Chunk.GetVoxelTypeChunkSpace(chunk, voxelPosition);
+        var blockType = Chunk.GetBlockTypeByCoordsInChunk(chunk, voxelPosition);
         
         if (blockType == BlockType.Air || blockType == BlockType.Nothing)
             return;
@@ -32,7 +32,7 @@ public static class BlockHelper
         foreach (Direction direction in _directions)
         {
             var neighbourBlockCoordinates = voxelPosition + direction.GetVector();
-            var neighbourBlockType = Chunk.GetVoxelTypeChunkSpace(in chunk, neighbourBlockCoordinates);
+            var neighbourBlockType = Chunk.GetBlockTypeByCoordsInChunk(in chunk, neighbourBlockCoordinates);
 
             if (neighbourBlockType != BlockType.Nothing && !BlockDataManager.Instance.BlockTextureDataDictionary[neighbourBlockType].IsSolid)
             {
