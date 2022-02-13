@@ -30,11 +30,6 @@ public class World : MonoBehaviour
         InitSimulators();
     }
 
-    private void InitSimulators()
-    {
-        _simulators.Add(BlockType.Sand, new SandSimulator());
-    }
-
     private void Start()
     {
         for (int x = 0; x < MapSizeInChunks; x++)
@@ -60,16 +55,43 @@ public class World : MonoBehaviour
     {
         if (_simulationTimer <= 0)
         {
-            Simulate();
             foreach (var chunkRend in _chunkDictionary.Values)
             {
                 chunkRend.UpdateChunk();
             }
 
+            Simulate();
             _simulationTimer = UpdateRate;
         }
 
         _simulationTimer -= Time.deltaTime;
+    }
+
+    public Vector3Int GetGlobalCoordsByLocal(ChunkData currentChunk, Vector3Int voxelCoords)
+    {
+        if (currentChunk is null)
+        {
+            throw new ArgumentNullException();
+        }
+
+        // TODO: Check if coords are correct
+
+        return voxelCoords + currentChunk.WorldPosition;
+    }
+
+
+    public (ChunkData localChunk, Vector3Int localCoords) GetLocalCoordsByWorldCoords(Vector3Int globalVoxelCoords)
+    {
+        ChunkData localChunk = _chunkDictionary[
+            new Vector3Int(
+                globalVoxelCoords.x / ChunkSize * ChunkSize,
+                0,
+                globalVoxelCoords.z / ChunkSize * ChunkSize)
+        ].ChunkData;
+
+        Vector3Int localCoords = globalVoxelCoords - localChunk.WorldPosition;
+
+        return (localChunk, localCoords);
     }
 
     public void GenerateWorld()
@@ -92,6 +114,22 @@ public class World : MonoBehaviour
                 _chunkDictionary.Add(data.WorldPosition, chunkRenderer);
                 chunkRenderer.ChunkData = data;
             }
+        }
+    }
+
+    public void SetBlock(Vector3 worldPos, BlockType newType)
+    {
+        Vector3Int chunkPosition = Chunk.WorldToChunkPosition(worldPos);
+
+        if (!_chunkDictionary.TryGetValue(chunkPosition, out ChunkRenderer containerChunk))
+            return;
+
+        Vector3Int blockInChunkCoordinates = Chunk.WorldToLocal(containerChunk.ChunkData, worldPos);
+        var prevType = Chunk.GetBlockTypeByCoordsInChunk(containerChunk.ChunkData, blockInChunkCoordinates);
+        if (newType != prevType)
+        {
+            Chunk.SetBlock(containerChunk.ChunkData, blockInChunkCoordinates, newType);
+            containerChunk.UpdateChunk();
         }
     }
 
@@ -137,22 +175,6 @@ public class World : MonoBehaviour
         }
     }
 
-    public void SetBlock(Vector3 worldPos, BlockType newType)
-    {
-        Vector3Int chunkPosition = Chunk.WorldToChunkPosition(worldPos);
-
-        if (!_chunkDictionary.TryGetValue(chunkPosition, out ChunkRenderer containerChunk))
-            return;
-
-        Vector3Int blockInChunkCoordinates = Chunk.WorldToLocal(containerChunk.ChunkData, worldPos);
-        var prevType = Chunk.GetBlockTypeByCoordsInChunk(containerChunk.ChunkData, blockInChunkCoordinates);
-        if (newType != prevType)
-        {
-            Chunk.SetBlock(containerChunk.ChunkData, blockInChunkCoordinates, newType);
-            containerChunk.UpdateChunk();
-        }
-    }
-
     private void Simulate()
     {
         foreach (var chunkRenderer in _chunkDictionary.Values)
@@ -165,5 +187,14 @@ public class World : MonoBehaviour
                 }
             });
         }
+    }
+
+    private void InitSimulators()
+    {
+        _simulators = new Dictionary<BlockType, ISimulator>
+        {
+            {BlockType.Sand, new SandSimulator()},
+            {BlockType.Water, new WaterSimulator()}
+        };
     }
 }
